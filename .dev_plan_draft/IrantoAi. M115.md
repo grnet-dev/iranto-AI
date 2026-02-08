@@ -24,7 +24,30 @@ Datos de ejecución y base de documentación, para:
   - Identificar tareas ejecutadas no contempladas en presupuesto.
   - Otras a definir.
 
+### Stack usado por empresa
+
+- Arangodb
+- Redis
+- Ollama
+- Nginx
+- Docker
+- OpenWebAi
+- GitHub
+- Sveltekit
+- Python
+
 ### Metodología
+
+Buscamos explorar las capacidades AI agentica, LLM y coordinador de procesos.
+
+Como implementamos:
+
+- Persistencia de datos, Graph-RAG ?
+- Entrenamiento AI, que especialidades y cuantas se necesitan?
+- Procesos auxiliares, que especialidades y cuantas se necesitan?
+- Agente coordinador?
+
+### Procesos auxiliares
 
 Usaremos como documento fuente, el último presupuesto aceptado (pdf) y crearemos procesos auxiliares
 que permitan la creación de datos necesarios.
@@ -35,7 +58,7 @@ que permitan la creación de datos necesarios.
 - Impresión y firma de documento contractual.
 - etc...
 
-#### Proceso inicial
+#### Proceso de comparación
 
 Comparación de Capítulos, Partidas y mediciones del presupuesto con lo reflejado en Proyecto
 del Arquitecto en busca de incongruencias.
@@ -201,7 +224,7 @@ tipo, dando el importe. Como hacer una traducción de certificación ???:
       {
         name: "instalacion",
         price: 5,
-        qty: 133.36,
+        qty: 133.36, // +(13.23 de la partida 01.23)
         percentPrevCert: 0,
         percentThisCert: 0.5,
         uds: "m2"
@@ -209,39 +232,7 @@ tipo, dando el importe. Como hacer una traducción de certificación ???:
       {
         name: "encintado",
         price: 2.5,
-        qty: 133.36,
-        percentPrevCert: 0,
-        percentThisCert: 0.5,
-         uds: "m2"
-      },
-    ],
-  },
-  {
-    familia: "fachada",
-    grupo: "Ventilada grapa oculta",
-    name: "subestructura",
-     uds: "m2"
-    tareas: [
-      {
-        name: "mensulas",
-        price: 8,
-        qty: 133.36,
-        percentPrevCert: 0,
-        percentThisCert: 0.5,
-         uds: "m2"
-      },
-      {
-        name: "montantes",
-        price: 8,
-        qty: 133.36,
-        percentPrevCert: 0,
-        percentThisCert: 0.5,
-         uds: "m2"
-      },
-      {
-        name: "travesanos",
-        price: 4,
-        qty: 133.36,
+        qty: 133.36, // +(13.23 de la partida 01.23)
         percentPrevCert: 0,
         percentThisCert: 0.5,
          uds: "m2"
@@ -257,7 +248,7 @@ tipo, dando el importe. Como hacer una traducción de certificación ???:
       {
         name: "mensulas",
         price: 8,
-        qty: 133.36,
+        qty: 133.36, // +(13.23 de la partida 01.23)
         percentPrevCert: 0,
         percentThisCert: 0.5,
          uds: "m2"
@@ -265,7 +256,7 @@ tipo, dando el importe. Como hacer una traducción de certificación ???:
       {
         name: "montantes",
         price: 8,
-        qty: 133.36,
+        qty: 133.36, // +(13.23 de la partida 01.23)
         percentPrevCert: 0,
         percentThisCert: 0.5,
          uds: "m2"
@@ -273,7 +264,7 @@ tipo, dando el importe. Como hacer una traducción de certificación ???:
       {
         name: "travesanos",
         price: 4,
-        qty: 133.36,
+        qty: 133.36, // Aqui la 01.23 no aplica
         percentPrevCert: 0,
         percentThisCert: 0.5,
          uds: "m2"
@@ -304,7 +295,7 @@ tipo, dando el importe. Como hacer una traducción de certificación ???:
       {
         name: "composite",
         price: 8,
-        qty: 133.36,
+        qty: 13.68, // viene de partida 01.23
         percentPrevCert: 0,
         percentThisCert: 0.5,
          uds: "m2"
@@ -312,7 +303,7 @@ tipo, dando el importe. Como hacer una traducción de certificación ???:
       {
         name: "SATE",
         price: 38,
-        qty: 0,
+        qty: 20.26, // viene de partida 01.24
         percentPrevCert: 0,
         percentThisCert: 0,
          uds: "m2"
@@ -328,8 +319,14 @@ tipo, dando el importe. Como hacer una traducción de certificación ???:
     ],
   },
 ];
-
 ```
+
+> **01.23 m2 Revestimiento vuelo horizontal P. 1a con aislamiento** -> **01.24 m2 Revestimiento horizontal y vertical alero aislamiento S.A.T.E**
+
+***Observamos detalladamente 01.23 y 01.24***. Hablan de revestimiento en zonas especiales del edificio,
+Aleros y Vuelos, debemos incorporarlas en las certificaciones. El sistema SATE no tiene sub-estructura y como es una zona concreta y de pequeño tamaño, por eficiencia la unificamos en una tarea, sumando al objeto anterior. La 01.23 pide usar composite y por lo tanto, sub-estructura. Lo descomponemos en las tareas comunes de fachada ventilada.
+
+---
 
 > **01.18 ml Aislamiento en recercados ventanas y picado previo** -> **01.19 ml Remate recercados en huecos de ventanas** -> **01.20 ml Vierteaguas de aluminio composite** -> **01.22 ml Albardilla Composite con Aislamiento térmico, Impermeabilización** -> **01.25 ml Remate de esquinas con chapa de aluminio**
 
@@ -580,3 +577,19 @@ _Esta partidas podemos inferir claramente tareas de remates del sistema._
   },º
 ];
 ```
+
+#### Retos de diseño de datos
+
+Lo anterior es una estructura básica, que puede ser útil si solo pretendemos gestionar certificaciones con subcontratas y operarios (descendente), pero hay otra información y procesos que no contemplan per necesitarían de ellos, retos:
+
+- Seguimientos de productividad de personal ajeno/propio.
+- Velocidad y estado de ejecución de proyectos.
+- Emisión de certificaciones a clientes: Los dos procesos están relacionados, pero el Arquitecto espera que le enviemos el grado de avance con formato de sus mediciones y descomposición de partidas y no, nuestra "traducción descendente", se necesita aplicar el avance con "traducción ascendente" al presupuesto de partida.
+- Control de costes: Lo anterior no indica granularidad de materiales; podemos controlar solo la productividad , y no es necesario para el control de costes. Hay partidas que claramente indican el material a usar, otras no y deben ser indicados, por ej.; en 01.23 sabemos que necesitamos Composite, pero en la 01.17, aunque diga cerámica en general, por diseño elegido por cliente, puede tener zonas de composite y otras de cerámica. Así,
+  - Como especificamos el material a usar, podemos controlar el coste de materiales?
+  - Como reflejamos las perdidas de sobrantes y desperdicios por cortes?
+  - Como enlazamos con el control de residuos?
+  - Como generamos conocimiento para saber repercusión de costes por Ud., para futuros presupuestos?
+- Como definimos que tareas especificas van a desarrollar los operarios y subcontratas?, si, por necesidades de ejecución de obra, mezclamos recursos humanos en una misma obra.
+- Como implementamos control de calidad de los trabajos?, por ej.: se instalan las ménsulas con sus fijaciones, el encargado hace una inspección aleatoria de control de par de apriete con herramienta digital, inspecciones visuales, etc.
+- otros a definir.
